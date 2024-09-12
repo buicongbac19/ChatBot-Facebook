@@ -1,8 +1,36 @@
 require("dotenv").config();
 import request from "request";
 
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+
 let getHomePage = (req, res) => {
   return res.render("homepage.ejs");
+};
+
+let setupProfile = async (req, res) => {
+  let request_body = {
+    get_started: { payload: "GET_STARTED" },
+    whitelisted_domains: ["https://chatbot-facebook-with-bcb.onrender.com/"],
+  };
+
+  // Send the HTTP request to the Messenger Platform
+  await request(
+    {
+      uri: `https://graph.facebook.com/v20.0/me/messenger_profile?access_token=${PAGE_ACCESS_TOKEN}`,
+      qs: { access_token: PAGE_ACCESS_TOKEN },
+      method: "POST",
+      json: request_body,
+    },
+    (err, res, body) => {
+      console.log(body);
+      if (!err) {
+        console.log("Setup user profile successful!");
+      } else {
+        console.error("Unable to setup user profile:" + err);
+      }
+    }
+  );
+  return res.send("Setup user profile successful!");
 };
 
 let postWebhook = (req, res) => {
@@ -143,5 +171,6 @@ module.exports = {
   handleMessage,
   handlePostback,
   callSendAPI,
+  setupProfile,
 };
 // curl -X GET "localhost:8080/webhook?hub.verify_token=isJustRandomString&hub.challenge=CHALLENGE_ACCEPTED&hub.mode=subscribe"
